@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DynamicPlugIn\DynamicPlugIn.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="lib\PlugInTest.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
