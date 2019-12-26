@@ -6,6 +6,8 @@
 
 ReWriter reWriter = new ReWriter(dllPath);
 
+
+//第一种方法：
 reWriter.Builder(
 
      "Class1",  <---- 需要修改的类名
@@ -16,8 +18,9 @@ reWriter.Builder(
                      
 );
             
-//或者
+//第二种方法：
 reWriter["Class1"] = "public class Class1{ ...... }";
+
 
 reWriter.Complier();
 reWriter.Dispose();
