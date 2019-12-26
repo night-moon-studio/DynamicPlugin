@@ -2,14 +2,13 @@
 using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.TypeSystem;
 using Natasha;
-using Natasha.Builder;
 using Natasha.Operator;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 
-namespace DynamicPlugIn
+namespace DynamicPlugin
 {
 
     public class ReWriter:IDisposable
