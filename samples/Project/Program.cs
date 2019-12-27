@@ -16,6 +16,7 @@ namespace Project
             Console.ReadKey();
         }
 
+
         public static string ReWrite(string path)
         {
             //  上面路径 使用 core3 第二个参数就不用传了
@@ -43,6 +44,8 @@ namespace Project
             return reWriter.NewDllPath;
 
         }
+
+
         public static void ShowPlugin(string path)
         {
             var domain = DomainManagment.Random;
