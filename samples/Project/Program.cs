@@ -12,11 +12,6 @@ namespace Project
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lib", "PlugInTest.dll");
             ShowPlugin(path);
             path = ReWrite(path);
-            for (int i = 0; i < 6; i++)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
             ShowPlugin(path);
             Console.ReadKey();
         }
@@ -33,7 +28,6 @@ namespace Project
 
             );
             reWriter.Complier();
-            reWriter.Dispose();
             return reWriter.NewDllPath;
 
         }

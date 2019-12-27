@@ -20,7 +20,7 @@ namespace DynamicPlugin
         public readonly CSharpDecompiler _decomplier;
         public readonly ConcurrentDictionary<string, string> _cache;
         public readonly ConcurrentDictionary<string, Type> _typeCache;
-        public readonly string NewDllPath;
+        public string NewDllPath;
         public Assembly NewAssembly;
 
 
@@ -42,6 +42,7 @@ namespace DynamicPlugin
             _decomplier = new CSharpDecompiler(filePath, _setting);
             var domain = DomainManagment.Random;
            
+
             _complier = new AssemblyComplier
             {
                 Domain = domain,
@@ -53,7 +54,6 @@ namespace DynamicPlugin
             {
                 _complier.AssemblyName = Path.GetFileNameWithoutExtension(filePath);
             }
-            NewDllPath = Path.Combine(domain.DomainPath, _complier.AssemblyName)+".dll";
             
 
             _assembly = DomainManagment.Random.LoadStream(filePath);
@@ -151,7 +151,9 @@ namespace DynamicPlugin
             {
                 _complier.Add(item.Value);
             }
-            return NewAssembly = _complier.GetAssembly();
+            NewAssembly = _complier.GetAssembly();
+            NewDllPath = _complier.DllFilePath;
+            return NewAssembly;
 
         }
 
