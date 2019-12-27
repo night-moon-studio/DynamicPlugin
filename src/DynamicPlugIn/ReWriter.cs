@@ -25,8 +25,8 @@ namespace DynamicPlugin
         public string NewDllPath;
         public Assembly NewAssembly;
         public List<string> References;
-
-
+        private readonly string[] _depsJsonFiles;
+        private readonly AssemblyDomain _pluginDomain;
 
         static ReWriter()
         {
@@ -38,7 +38,7 @@ namespace DynamicPlugin
 
 
 
-        public ReWriter(string filePath,bool useDepsJson=true, bool useRandomAssembly=true)
+        public ReWriter(string filePath,bool useDepsJson=true)
         {
 
             References = new List<string>();
@@ -50,36 +50,35 @@ namespace DynamicPlugin
             _complier = new AssemblyComplier
             {
                 Domain = domain,
-                ComplieInFile = true
+                ComplieInFile = true,
+                AssemblyName = Path.GetFileNameWithoutExtension(filePath)
             };
 
 
-            if (!useRandomAssembly)
-            {
-                _complier.AssemblyName = Path.GetFileNameWithoutExtension(filePath);
-            }
-
-
-            _assembly = DomainManagment.Random.LoadStream(filePath);
+            _pluginDomain = DomainManagment.Random;
+            _assembly = _pluginDomain.LoadStream(filePath);
+            _assembly.RemoveReferences();
             CSharpDecompiler _decomplier;
             if (useDepsJson)
             {
                 var module = new PEFile(filePath);
                 var resolver = new UniversalAssemblyResolver(filePath, false, module.Reader.DetectTargetFrameworkId());
                 _decomplier = new CSharpDecompiler(filePath, resolver, _setting);
+                _depsJsonFiles = Directory.GetFiles(Path.GetDirectoryName(filePath), "*.deps.json");
+                
             }
             else
             {
                 _decomplier = new CSharpDecompiler(filePath, _setting);
             }
             
+
             foreach (var item in _assembly.ExportedTypes)
             {
                 var temp = item.GetDevelopName();
                 _typeCache[temp] = item;
                 _cache[temp] = _decomplier.DecompileTypeAsString(new FullTypeName(item.FullName));
             }
-            _assembly.DisposeDomain();
 
         }
 
@@ -125,7 +124,9 @@ namespace DynamicPlugin
 
             set
             {
+
                 _cache[name] = value;
+                _typeCache[name].RemoveReferences();
 
             }
         
@@ -162,6 +163,10 @@ namespace DynamicPlugin
         public Assembly Complier()
         {
 
+            foreach (var item in _pluginDomain.ReferencesCache)
+            {
+                _complier.Domain.ReferencesCache.AddLast(item);
+            }
             foreach (var item in References)
             {
                 _complier.Domain.LoadStream(item);
@@ -170,8 +175,22 @@ namespace DynamicPlugin
             {
                 _complier.Add(item.Value);
             }
+
+
             NewAssembly = _complier.GetAssembly();
             NewDllPath = _complier.DllFilePath;
+            var _newDirectory = Path.GetDirectoryName(NewDllPath);
+
+
+            if (_depsJsonFiles!=default)
+            {
+                foreach (var item in _depsJsonFiles)
+                {
+                    FileInfo info = new FileInfo(item);
+                    info.CopyTo(Path.Combine(_newDirectory, Path.GetFileName(item)));
+                }
+            }
+         
             return NewAssembly;
 
         }
