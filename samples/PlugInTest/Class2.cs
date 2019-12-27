@@ -8,5 +8,10 @@
             classTemp = new Class1();
             return classTemp.Name;
         }
+
+        public void Set(dynamic a)
+        {
+            classTemp.Name = a.Name;
+        }
     }
 }
