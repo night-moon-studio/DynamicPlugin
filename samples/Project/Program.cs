@@ -48,11 +48,22 @@ namespace Project
 
         public static void ShowPlugin(string path)
         {
+            //使用随机域
             var domain = DomainManagment.Random;
+
+            //如果是2.0 需要单独添加引用，如果是3.0 就可以注释掉了
             domain.LoadStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lib", "core2", "MySql.Data.dll"));
+
+            //加载插件
             var assembly = domain.LoadStream(path);
+
+            //撸代码
             var action = NDomain.Create(domain).Action("Class2 temp = new Class2();Console.WriteLine(temp.Get());", assembly);
+
+            //执行
             action();
+
+            //卸载
             action.DisposeDomain();
         }
     }
