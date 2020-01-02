@@ -8,13 +8,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
 namespace DynamicPlugin
 {
 
-    public class ReWriter:IDisposable
+    public class ReWriter : IDisposable
     {
 
         public readonly static DecompilerSettings _setting;
@@ -25,8 +26,8 @@ namespace DynamicPlugin
         public string NewDllPath;
         public Assembly NewAssembly;
         public List<string> References;
-        private readonly string[] _depsJsonFiles;
         private readonly AssemblyDomain _pluginDomain;
+        public readonly string OldPath;
 
         static ReWriter()
         {
@@ -38,14 +39,14 @@ namespace DynamicPlugin
 
 
 
-        public ReWriter(string filePath,bool useDepsJson=true)
+        public ReWriter(string filePath, bool useDepsJson = true)
         {
 
             References = new List<string>();
             _typeCache = new ConcurrentDictionary<string, Type>();
             _cache = new ConcurrentDictionary<string, string>();
             var domain = DomainManagment.Random;
-           
+            OldPath = filePath;
 
             _complier = new AssemblyComplier
             {
@@ -57,21 +58,21 @@ namespace DynamicPlugin
 
             _pluginDomain = DomainManagment.Random;
             _assembly = _pluginDomain.LoadStream(filePath);
-            _assembly.RemoveReferences();
             CSharpDecompiler _decomplier;
             if (useDepsJson)
             {
                 var module = new PEFile(filePath);
                 var resolver = new UniversalAssemblyResolver(filePath, false, module.Reader.DetectTargetFrameworkId());
                 _decomplier = new CSharpDecompiler(filePath, resolver, _setting);
-                _depsJsonFiles = Directory.GetFiles(Path.GetDirectoryName(filePath), "*.deps.json");
-                
+
             }
             else
             {
+
                 _decomplier = new CSharpDecompiler(filePath, _setting);
+
             }
-            
+
 
             foreach (var item in _assembly.ExportedTypes)
             {
@@ -99,7 +100,7 @@ namespace DynamicPlugin
             {
                 throw new Exception($"Can't find type:{typeName}!");
             }
-          
+
         }
         public void Builder(Type type, Action<OopOperator> action)
         {
@@ -129,7 +130,7 @@ namespace DynamicPlugin
                 _typeCache[name].RemoveReferences();
 
             }
-        
+
         }
 
 
@@ -180,17 +181,33 @@ namespace DynamicPlugin
             NewAssembly = _complier.GetAssembly();
             NewDllPath = _complier.DllFilePath;
             var _newDirectory = Path.GetDirectoryName(NewDllPath);
-
-
-            if (_depsJsonFiles!=default)
+            var _oldDirectory = Path.GetDirectoryName(OldPath);
+            DirectoryInfo info = new DirectoryInfo(_oldDirectory);
+            var files = info.GetFiles("*.*", SearchOption.AllDirectories).Where(item => item.FullName != OldPath);
+            var directories = info.GetDirectories("*.*", SearchOption.AllDirectories);
+            foreach (var item in directories)
             {
-                foreach (var item in _depsJsonFiles)
+
+                string newPath = _newDirectory + item.FullName.Replace(_oldDirectory, "");
+                if (!Directory.Exists(newPath))
                 {
-                    FileInfo info = new FileInfo(item);
-                    info.CopyTo(Path.Combine(_newDirectory, Path.GetFileName(item)));
+                    Directory.CreateDirectory(newPath);
                 }
+
             }
-         
+
+
+            foreach (var item in files)
+            {
+
+                string newPath = _newDirectory + item.FullName.Replace(_oldDirectory, "");
+                if (!File.Exists(newPath))
+                {
+                    item.CopyTo(newPath);
+                }
+               
+            }
+
             return NewAssembly;
 
         }
@@ -207,7 +224,7 @@ namespace DynamicPlugin
             _complier.Domain.Dispose();
 
         }
- 
+
     }
 
 }
