@@ -6,11 +6,8 @@
 
   <ItemGroup>
     <!--<PackageReference Include="DotNetCore.Natasha" Version="2.8.11" />-->
+    <PackageReference Include="DotNetCore.Natasha" Version="2.9.6" />
     <PackageReference Include="ICSharpCode.Decompiler" Version="5.0.2.5153" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Natasha\src\Natasha\Natasha.csproj" />
   </ItemGroup>
   
 </Project>
