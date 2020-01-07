@@ -51,7 +51,7 @@ namespace DynamicPlugin
             _complier = new AssemblyComplier
             {
                 Domain = domain,
-                ComplieInFile = true,
+                EnumCRTarget = ComplierResultTarget.File,
                 AssemblyName = Path.GetFileNameWithoutExtension(filePath)
             };
 
